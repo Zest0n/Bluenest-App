@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'core/app_colors.dart';
+import 'core/app_theme.dart';
 import 'screens/welcome_screen.dart';
 
 void main() => runApp(const BlueNestApp());
@@ -12,11 +12,7 @@ class BlueNestApp extends StatelessWidget {
     return MaterialApp(
       title: 'BlueNest',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
-        scaffoldBackgroundColor: Colors.white,
-      ),
+      theme: AppTheme.light,
       home: const WelcomeScreen(),
     );
   }

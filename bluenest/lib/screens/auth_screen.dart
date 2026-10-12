@@ -85,12 +85,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
   InputDecoration _dec(String label, IconData icon) => InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: AppColors.grey),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
+        prefixIcon: Icon(icon, color: AppColors.textSecondary),
       );
 
   String? _required(String? v) =>
@@ -100,14 +95,13 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final isTenant = widget.role == 'tenant';
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        foregroundColor: AppColors.navy,
-      ),
+      backgroundColor: AppColors.surface,
+      appBar: AppBar(),
       body: SafeArea(
-        child: SingleChildScrollView(
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
           child: Form(
             key: _formKey,
@@ -119,12 +113,12 @@ class _AuthScreenState extends State<AuthScreen> {
                   style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.navy),
+                      color: AppColors.textPrimary),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   isTenant ? 'Continuing as a tenant' : 'Continuing as a landlord',
-                  style: const TextStyle(color: AppColors.grey),
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 if (!_isLogin) ...[
@@ -222,11 +216,13 @@ class _AuthScreenState extends State<AuthScreen> {
                       _isLogin
                           ? "Don't have an account? Sign up"
                           : 'Already have an account? Log in',
-                      style: const TextStyle(color: AppColors.primary),
+                      style: const TextStyle(color: AppColors.secondary),
                     ),
                   ),
                 ),
               ],
+            ),
+          ),
             ),
           ),
         ),
