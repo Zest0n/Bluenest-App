@@ -74,7 +74,7 @@ class WelcomeScreen extends StatelessWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.home_rounded,
+                                    Icon(Icons.house,
                                         size: logo, color: AppColors.primary),
                                     const SizedBox(height: 8),
                                     FittedBox(

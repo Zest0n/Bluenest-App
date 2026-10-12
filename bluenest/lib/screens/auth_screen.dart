@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../services/auth_service.dart';
-import 'home_screen.dart';
+import '../core/app_navigator.dart';
+import '../core/dev_config.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role; // 'tenant' or 'landlord'
@@ -41,6 +42,15 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _submit() async {
+    // ---- DEV ONLY (remove later) ------------------------------------------
+    // Skips validation + API and opens the dashboard directly.
+    // Turn off with DevConfig.bypassLogin = false, or delete this block.
+    if (DevConfig.bypassLogin && _isLogin) {
+      AppNavigator.goToDashboard(context, widget.role);
+      return;
+    }
+    // -----------------------------------------------------------------------
+
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
@@ -73,10 +83,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     if (_isLogin) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => HomeScreen(role: widget.role)),
-        (_) => false,
-      );
+      AppNavigator.goToDashboard(context, widget.role);
     } else {
       _toast('Account created! Please log in.', error: false);
       setState(() => _isLogin = true);
