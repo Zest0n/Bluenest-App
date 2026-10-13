@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../services/auth_service.dart';
 import '../core/app_navigator.dart';
-
+import '../core/dev_config.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role; // 'tenant' or 'landlord'
@@ -42,23 +42,13 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _submit() async {
-  // TEMPORARY DEVELOPMENT BYPASS:
-  // REMOVE THIS ENTIRE if (_isLogin) BLOCK when backend
-  // authentication is ready. This currently allows login
-  // without checking username or password.
-  // Normal authentication will resume through AuthService.login()
-  // after this block is removed.
-
-  if (_isLogin) {
-    debugPrint('LOGIN BYPASS TRIGGERED');
-
-    AppNavigator.goToDashboard(context, widget.role);
-    return;
-  }
-
-  if (!_formKey.currentState!.validate()) return;
-
-  // Keep the rest of your existing authentication code below.
+    // ---- DEV ONLY (remove later) ------------------------------------------
+    // Skips validation + API and opens the dashboard directly.
+    // Turn off with DevConfig.bypassLogin = false, or delete this block.
+    if (DevConfig.bypassLogin && _isLogin) {
+      AppNavigator.goToDashboard(context, widget.role);
+      return;
+    }
     // -----------------------------------------------------------------------
 
     if (!_formKey.currentState!.validate()) return;
