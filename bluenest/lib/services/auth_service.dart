@@ -1,6 +1,7 @@
 import '../core/api_constants.dart';
 import 'api_service.dart';
 import 'token_storage.dart';
+import 'user_service.dart';
 
 class AuthService {
   /// Returns null on success, or an error message.
@@ -15,9 +16,39 @@ class AuthService {
     });
     if (!res.ok) return res.errorMessage;
 
+    final data = res.data is Map ? res.data as Map : {};
+    final access = data['access']?.toString() ?? '';
+    final refresh = data['refresh']?.toString() ?? '';
+
     await TokenStorage.save(
-      access: res.data['access'],
-      refresh: res.data['refresh'],
+      access: access,
+      refresh: refresh,
+      role: role,
+    );
+
+    // Populate user profile
+    final saved = await TokenStorage.loadProfile();
+    final firstName =
+        saved['firstName']?.isNotEmpty == true ? saved['firstName']! : username;
+    final lastName = saved['lastName'] ?? '';
+    final email = saved['email'] ?? '';
+    final phone = saved['phone'] ?? '';
+
+    await TokenStorage.saveProfile(
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
+      role: role,
+    );
+
+    UserService.init(
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
       role: role,
     );
     return null;
@@ -31,7 +62,6 @@ class AuthService {
     required String firstName,
     required String lastName,
     required String password,
-    required String password2,
     required String role, // 'tenant' or 'landlord'
   }) async {
     final res = await ApiService.post(ApiConstants.register, {
@@ -41,9 +71,27 @@ class AuthService {
       'first_name': firstName,
       'last_name': lastName,
       'password': password,
-      'password2': password2,
       'role': role,
     });
-    return res.ok ? null : res.errorMessage;
+    if (!res.ok) return res.errorMessage;
+
+    // Cache the registered profile details
+    await TokenStorage.saveProfile(
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
+      role: role,
+    );
+    UserService.init(
+      username: username,
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone,
+      role: role,
+    );
+    return null;
   }
 }

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../services/auth_service.dart';
 import '../core/app_navigator.dart';
+import '../widgets/brand_logo.dart';
 import '../core/dev_config.dart';
+import '../services/token_storage.dart';
+import '../services/user_service.dart';
 
 class AuthScreen extends StatefulWidget {
   final String role; // 'tenant' or 'landlord'
@@ -45,8 +48,31 @@ class _AuthScreenState extends State<AuthScreen> {
     // ---- DEV ONLY (remove later) ------------------------------------------
     // Skips validation + API and opens the dashboard directly.
     // Turn off with DevConfig.bypassLogin = false, or delete this block.
-    if (DevConfig.bypassLogin && _isLogin) {
-      AppNavigator.goToDashboard(context, widget.role);
+    if (DevConfig.bypassLogin) {
+      if (_isLogin) {
+        UserService.init(
+          username: _username.text.trim().isNotEmpty
+              ? _username.text.trim()
+              : 'vasu_tenant01',
+          firstName: _first.text.trim().isNotEmpty ? _first.text.trim() : 'Vasu',
+          lastName: _last.text.trim().isNotEmpty ? _last.text.trim() : 'Tenant',
+          email: _email.text.trim().isNotEmpty
+              ? _email.text.trim()
+              : 'tenant01@example.com',
+          phone: _phone.text.trim().isNotEmpty ? _phone.text.trim() : '9876543210',
+          role: widget.role,
+        );
+        await TokenStorage.save(
+          access: 'mock-access-token',
+          refresh: 'mock-refresh-token',
+          role: widget.role,
+        );
+        if (!mounted) return;
+        AppNavigator.goToDashboard(context, widget.role);
+      } else {
+        _toast('Account created! Please log in.', error: false);
+        setState(() => _isLogin = true);
+      }
       return;
     }
     // -----------------------------------------------------------------------
@@ -69,7 +95,6 @@ class _AuthScreenState extends State<AuthScreen> {
         firstName: _first.text.trim(),
         lastName: _last.text.trim(),
         password: _pass.text,
-        password2: _pass2.text,
         role: widget.role,
       );
     }
@@ -102,8 +127,8 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final isTenant = widget.role == 'tenant';
     return Scaffold(
-      backgroundColor: AppColors.surface,
-      appBar: AppBar(),
+      backgroundColor: AppColors.surfaceOf(context),
+      appBar: AppBar(backgroundColor: AppColors.surfaceOf(context)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -115,17 +140,19 @@ class _AuthScreenState extends State<AuthScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(child: BrandLogo.mark(size: 72)),
+                const SizedBox(height: 20),
                 Text(
                   _isLogin ? 'Welcome back' : 'Create account',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary),
+                      color: AppColors.textPrimaryOf(context)),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   isTenant ? 'Continuing as a tenant' : 'Continuing as a landlord',
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondaryOf(context)),
                 ),
                 const SizedBox(height: 24),
                 if (!_isLogin) ...[
@@ -214,17 +241,40 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
                 const SizedBox(height: 16),
                 Center(
-                  child: TextButton(
-                    onPressed: () => setState(() {
-                      _isLogin = !_isLogin;
-                      _formKey.currentState?.reset();
-                    }),
-                    child: Text(
-                      _isLogin
-                          ? "Don't have an account? Sign up"
-                          : 'Already have an account? Log in',
-                      style: const TextStyle(color: AppColors.secondary),
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isLogin
+                            ? "Don't have an account? "
+                            : 'Already have an account? ',
+                        style: TextStyle(
+                          color: AppColors.textSecondaryOf(context),
+                          fontSize: 14,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () => setState(() {
+                          _isLogin = !_isLogin;
+                          _formKey.currentState?.reset();
+                        }),
+                        child: Text(
+                          _isLogin ? 'Sign up' : 'Log in',
+                          style: TextStyle(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? AppColors.primaryDark
+                                : AppColors.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
+                            decorationColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                    ? AppColors.primaryDark
+                                    : AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

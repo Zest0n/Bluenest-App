@@ -1,17 +1,24 @@
-/// A property from /api/listing/properties/.
-///
-/// Known fields (from the Postman responses): id, title, description, city,
-/// locality, bhk, size_sqft, created_at, updated_at. Anything else the backend
-/// sends is kept in [raw] and shown automatically in [extraFields], so new
-/// backend fields appear on the details screen without code changes.
+import '../core/api_constants.dart';
+import '../core/property_options.dart';
+
+/// A property from /api/listing/properties/ (fields per the Postman docs).
+/// Unknown extra fields stay in [raw] and show up in [detailRows].
 class Property {
   final int id;
   final String title;
   final String description;
+  final String propertyType;
+  final String address;
   final String city;
   final String locality;
   final int? bhk;
+  final int? bathrooms;
   final double? sizeSqft;
+  final int? floor;
+  final String furnishingStatus;
+  final String tenantPreference;
+  final num? askingRent;
+  final String? imageUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
   final Map<String, dynamic> raw;
@@ -20,51 +27,82 @@ class Property {
     required this.id,
     required this.title,
     required this.description,
+    required this.propertyType,
+    required this.address,
     required this.city,
     required this.locality,
+    required this.furnishingStatus,
+    required this.tenantPreference,
     this.bhk,
+    this.bathrooms,
     this.sizeSqft,
+    this.floor,
+    this.askingRent,
+    this.imageUrl,
     this.createdAt,
     this.updatedAt,
     this.raw = const {},
   });
 
   factory Property.fromJson(Map<String, dynamic> j) {
+    String s(String k) => j[k]?.toString() ?? '';
     return Property(
       id: (j['id'] as num?)?.toInt() ?? 0,
-      title: j['title']?.toString() ?? '',
-      description: j['description']?.toString() ?? '',
-      city: j['city']?.toString() ?? '',
-      locality: j['locality']?.toString() ?? '',
-      bhk: int.tryParse(j['bhk']?.toString() ?? ''),
-      sizeSqft: double.tryParse(j['size_sqft']?.toString() ?? ''),
-      createdAt: DateTime.tryParse(j['created_at']?.toString() ?? ''),
-      updatedAt: DateTime.tryParse(j['updated_at']?.toString() ?? ''),
+      title: s('title'),
+      description: s('description'),
+      propertyType: s('property_type'),
+      address: s('address'),
+      city: s('city'),
+      locality: s('locality'),
+      bhk: int.tryParse(s('bhk')),
+      bathrooms: int.tryParse(s('bathrooms')),
+      sizeSqft: double.tryParse(s('size_sqft')),
+      floor: int.tryParse(s('floor')),
+      furnishingStatus: s('furnishing_status'),
+      tenantPreference: s('tenant_preference'),
+      askingRent: num.tryParse(s('asking_rent')),
+      imageUrl: _resolveImage(j['image']),
+      createdAt: DateTime.tryParse(s('created_at')),
+      updatedAt: DateTime.tryParse(s('updated_at')),
       raw: j,
     );
   }
 
-  String get location =>
-      [locality, city].where((s) => s.trim().isNotEmpty).join(', ');
-
-  /// Monthly rent, if the backend sends it under a common key.
-  /// TODO: replace with the real field name once confirmed.
-  num? get rent {
-    for (final k in ['rent', 'monthly_rent', 'rent_amount', 'price', 'expected_rent']) {
-      final v = num.tryParse(raw[k]?.toString() ?? '');
-      if (v != null) return v;
-    }
-    return null;
+  static String? _resolveImage(dynamic v) {
+    final s = v?.toString().trim() ?? '';
+    if (s.isEmpty) return null;
+    if (s.startsWith('http')) return s;
+    final base = ApiConstants.baseUrl.replaceAll(RegExp(r'/+$'), '');
+    return s.startsWith('/') ? '$base$s' : '$base/$s';
   }
 
+  String get location =>
+      [locality, city].where((x) => x.trim().isNotEmpty).join(', ');
+
+  /// Monthly rent shown on cards (backend field: asking_rent).
+  num? get rent => askingRent;
+
   static const _known = {
-    'id', 'title', 'description', 'city', 'locality', 'bhk',
-    'size_sqft', 'created_at', 'updated_at',
+    'id', 'title', 'description', 'property_type', 'address', 'city',
+    'locality', 'bhk', 'bathrooms', 'size_sqft', 'floor', 'furnishing_status',
+    'tenant_preference', 'asking_rent', 'image', 'created_at', 'updated_at',
   };
 
-  /// Every other field the API returned, as label -> text.
-  Map<String, String> get extraFields {
+  /// Label -> value rows for the details screen: the known fields first,
+  /// then anything else the API returns.
+  Map<String, String> get detailRows {
     final out = <String, String>{};
+    void add(String label, String? v) {
+      if (v != null && v.trim().isNotEmpty) out[label] = v;
+    }
+
+    add('Property type', PropertyOptions.label(propertyType));
+    add('Address', address);
+    add('Bathrooms', bathrooms?.toString());
+    add('Floor', floor?.toString());
+    add('Furnishing', PropertyOptions.label(furnishingStatus));
+    add('Preferred tenants', PropertyOptions.label(tenantPreference));
+
     raw.forEach((k, v) {
       if (_known.contains(k) || v == null) return;
       final text = v.toString().trim();

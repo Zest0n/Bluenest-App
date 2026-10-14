@@ -19,6 +19,7 @@ class ScreenPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 480),
@@ -29,19 +30,21 @@ class ScreenPlaceholder extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 36,
-                backgroundColor: AppColors.primarySoft,
-                child: Icon(icon, size: 36, color: AppColors.primary),
+                backgroundColor: AppColors.primarySoftOf(context),
+                child: Icon(icon,
+                    size: 36,
+                    color: isDark ? AppColors.primaryDark : AppColors.primary),
               ),
               const SizedBox(height: 16),
               Text(title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary)),
+                      color: AppColors.textPrimaryOf(context))),
               const SizedBox(height: 6),
               Text(note,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(color: AppColors.textSecondaryOf(context))),
               if (actions.isNotEmpty) ...[
                 const SizedBox(height: 28),
                 ...actions,

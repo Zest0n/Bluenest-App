@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../widgets/brand_logo.dart';
 import 'auth_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -28,13 +29,9 @@ class WelcomeScreen extends StatelessWidget {
             _bgAsset,
             fit: BoxFit.cover,
             alignment: Alignment.center,
-            errorBuilder: (_, __, ___) => const DecoratedBox(
+            errorBuilder: (_, _, _) => const DecoratedBox(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [AppColors.secondary, AppColors.midnight],
-                ),
+                color: AppColors.midnight,
               ),
             ),
           ),
@@ -42,14 +39,7 @@ class WelcomeScreen extends StatelessWidget {
           // 2) Dark overlay so the text is readable on any photo
           DecoratedBox(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.midnight.withOpacity(0.60),
-                  AppColors.midnight.withOpacity(0.20),
-                ],
-              ),
+              color: AppColors.midnight.withValues(alpha: 0.82),
             ),
           ),
 
@@ -58,8 +48,7 @@ class WelcomeScreen extends StatelessWidget {
             child: LayoutBuilder(
               builder: (context, c) {
                 final h = c.maxHeight;
-                final logo = (h * 0.09).clamp(44.0, 80.0);
-                final title = (h * 0.05).clamp(28.0, 42.0);
+                final logoW = (h * 0.34).clamp(180.0, 320.0);
 
                 return SingleChildScrollView(
                   child: ConstrainedBox(
@@ -74,21 +63,8 @@ class WelcomeScreen extends StatelessWidget {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.house,
-                                        size: logo, color: AppColors.primary),
+                                    BrandLogo.white(width: logoW),
                                     const SizedBox(height: 8),
-                                    FittedBox(
-                                      child: Text(
-                                        'BLUENEST',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: title,
-                                          fontWeight: FontWeight.w800,
-                                          letterSpacing: title * 0.2,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
                                     const Text(
                                       'Find your place. Feel at home.',
                                       style: TextStyle(
