@@ -1,0 +1,10 @@
+1) Extract over your project root (lib/, assets/images/, web/ get merged/overwritten).
+2) Make sure pubspec has:   assets:  - assets/images/     (already there)
+3) flutter clean && flutter pub get && flutter run -d chrome
+4) Android/iOS launcher icon (optional): add to pubspec dev_dependencies  flutter_launcher_icons: ^0.14.1
+   and this block at the bottom of pubspec.yaml, then run  dart run flutter_launcher_icons
+   flutter_launcher_icons:
+     android: true
+     ios: true
+     image_path: "assets/images/logo_full.png"
+     remove_alpha_ios: true
